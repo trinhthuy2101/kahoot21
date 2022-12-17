@@ -6,8 +6,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"ecommerce/customer/internal/di"
-	"ecommerce/customer/pkg/logger"
+	"examples/kahootee/internal/di"
+	"examples/kahootee/pkg/logger"
 )
 
 func RunHTTPServer() {
@@ -41,18 +41,18 @@ func waitSignal(err <-chan error) {
 	}
 }
 
-func RunGRPCServer() {
-	grpcServer, cleanup, err := di.InitializeGRPCServer()
-	if err != nil {
-		logger.Fatal("failed to initialize grpc server: %v", err)
-	}
+// func RunGRPCServer() {
+// 	grpcServer, cleanup, err := di.InitializeGRPCServer()
+// 	if err != nil {
+// 		logger.Fatal("failed to initialize grpc server: %v", err)
+// 	}
 
-	defer cleanup()
+// 	defer cleanup()
 
-	grpcServer.Start()
+// 	grpcServer.Start()
 
-	logger.Info("GRPC server is running")
+// 	logger.Info("GRPC server is running")
 
-	waitSignal(grpcServer.Notify())
-	grpcServer.Shutdown()
-}
+// 	waitSignal(grpcServer.Notify())
+// 	grpcServer.Shutdown()
+// }

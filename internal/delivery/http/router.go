@@ -9,13 +9,16 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	v1 "ecommerce/customer/internal/delivery/http/v1"
-	"ecommerce/customer/internal/usecase"
+	v1 "examples/kahootee/internal/delivery/http/v1"
+	service "examples/kahootee/internal/service/jwthelper"
+	"examples/kahootee/internal/usecase"
 )
 
 type Router struct {
 	handler *gin.Engine
-	t       usecase.Customer
+	j       service.JWTHelper
+	k       usecase.KahootUsecase
+	g       usecase.GroupUsecase
 }
 
 func (r *Router) Register() {
@@ -34,12 +37,14 @@ func (r *Router) Register() {
 	r.handler.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	// Routers
-	v1.RegisterRouter(r.handler.Group("/v1"), r.t)
+	v1.NewRouter(r.handler.Group("/v1"), r.j, r.k, r.g)
 }
 
-func NewRouter(handler *gin.Engine, t usecase.Customer) *Router {
+func NewRouter(handler *gin.Engine, jwtHelper service.JWTHelper, k usecase.KahootUsecase, g usecase.GroupUsecase) *Router {
 	return &Router{
 		handler: handler,
-		t:       t,
+		j:       jwtHelper,
+		k:       k,
+		g:       g,
 	}
 }

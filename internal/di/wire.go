@@ -4,18 +4,17 @@
 package di
 
 import (
-	"ecommerce/customer/config"
-	grpcDelivery "ecommerce/customer/internal/delivery/grpc"
-	"ecommerce/customer/internal/delivery/http"
-	"ecommerce/customer/internal/repository"
-	"ecommerce/customer/internal/usecase"
-	"ecommerce/customer/pkg/grpcserver"
-	"ecommerce/customer/pkg/httpserver"
+	"examples/kahootee/config"
+	grpcDelivery "examples/kahootee/internal/delivery/grpc"
+	"examples/kahootee/internal/delivery/http"
+	"examples/kahootee/internal/repository"
+	"examples/kahootee/internal/usecase"
+	"examples/kahootee/pkg/grpcserver"
+	"examples/kahootee/pkg/httpserver"
 	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
-	"github.com/uchin-mentorship/ecommerce-go/customer"
 	"google.golang.org/grpc"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -32,36 +31,36 @@ func InitializeHttpServer() (*httpserver.Server, func(), error) {
 	))
 }
 
-func InitializeGRPCServer() (*grpcserver.GRPCServer, func(), error) {
-	panic(wire.Build(
-		useCaseSet,
-		grpc.NewServer,
-		provideGRPCServerOptions,
-		provideGRPCServer,
-		provideGRPCCustomerService,
-	))
-}
+// func InitializeGRPCServer() (*grpcserver.GRPCServer, func(), error) {
+// 	panic(wire.Build(
+// 		useCaseSet,
+// 		grpc.NewServer,
+// 		provideGRPCServerOptions,
+// 		provideGRPCServer,
+// 		provideGRPCCustomerService,
+// 	))
+// }
 
-func provideGRPCCustomerService(u usecase.Customer) customer.CustomerServiceServer {
-	return grpcDelivery.NewCustomerService(u)
-}
+// func provideGRPCCustomerService(u usecase.Customer) customer.CustomerServiceServer {
+// 	return grpcDelivery.NewCustomerService(u)
+// }
 
-func provideGRPCServerOptions() []grpc.ServerOption {
-	return nil
-}
+// func provideGRPCServerOptions() []grpc.ServerOption {
+// 	return nil
+// }
 
-func provideGRPCServer(cfg *config.Config, server *grpc.Server, delivery customer.CustomerServiceServer) *grpcserver.GRPCServer {
-	customer.RegisterCustomerServiceServer(server, delivery)
-	return grpcserver.New(server, cfg.GRPC.Address)
-}
+// func provideGRPCServer(cfg *config.Config, server *grpc.Server, delivery customer.CustomerServiceServer) *grpcserver.GRPCServer {
+// 	customer.RegisterCustomerServiceServer(server, delivery)
+// 	return grpcserver.New(server, cfg.GRPC.Address)
+// }
 
-func provideCustomerRepo(db *gorm.DB) usecase.CustomerRepo {
-	return repository.New(db)
-}
+// func provideCustomerRepo(db *gorm.DB) usecase.CustomerRepo {
+// 	return repository.New(db)
+// }
 
-func provideCustomerUseCase(r usecase.CustomerRepo) usecase.Customer {
-	return usecase.NewCustomer(r)
-}
+// func provideCustomerUseCase(r usecase.CustomerRepo) usecase.Customer {
+// 	return usecase.NewCustomer(r)
+// }
 
 func provideGormDB(cfg *config.Config) (*gorm.DB, func(), error) {
 	db, err := gorm.Open(postgres.Open(cfg.PG.URL), &gorm.Config{})

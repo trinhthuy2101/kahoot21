@@ -1,8 +1,8 @@
 package main
 
 import (
-	"ecommerce/customer/cmd"
-	_ "ecommerce/customer/docs"
+	"examples/kahootee/cmd"
+	_ "examples/kahootee/docs"
 )
 
 func main() {

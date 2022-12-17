@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"ecommerce/customer/internal/app"
+	"examples/kahootee/internal/app"
 )
 
 func migrateCommand() *cobra.Command {
