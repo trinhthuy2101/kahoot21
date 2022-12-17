@@ -1,0 +1,128 @@
+definitions:
+  entity.Customer:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      gender:
+        type: string
+      id:
+        type: integer
+      lastName:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  response.Collection:
+    properties:
+      pagination:
+        $ref: '#/definitions/response.Pagination'
+      results: {}
+    type: object
+  response.Data:
+    properties:
+      result: {}
+    type: object
+  response.FailureResponse:
+    properties:
+      message:
+        type: string
+      status:
+        type: integer
+      traceId:
+        type: string
+    type: object
+  response.Pagination:
+    properties:
+      currentPage:
+        type: integer
+      pageSize:
+        type: integer
+      totalPages:
+        type: integer
+      totalRecords:
+        type: integer
+    type: object
+  response.Response:
+    properties:
+      data: {}
+      message:
+        type: string
+      status:
+        type: integer
+      traceId:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /v1/customers:
+    get:
+      consumes:
+      - application/json
+      description: Customer collection
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.Collection'
+                  - properties:
+                      results:
+                        items:
+                          $ref: '#/definitions/entity.Customer'
+                        type: array
+                    type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailureResponse'
+      summary: Get customers
+      tags:
+      - Customer
+  /v1/customers/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get customer by id
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/response.Data'
+                  - properties:
+                      result:
+                        $ref: '#/definitions/entity.Customer'
+                    type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.FailureResponse'
+      summary: Get customer
+      tags:
+      - Customer
+swagger: "2.0"
