@@ -7,17 +7,14 @@
 package di
 
 import (
-	"ecommerce/customer/config"
-	grpc2 "ecommerce/customer/internal/delivery/grpc"
-	"ecommerce/customer/internal/delivery/http"
-	"ecommerce/customer/internal/repository"
-	"ecommerce/customer/internal/usecase"
-	"ecommerce/customer/pkg/grpcserver"
-	"ecommerce/customer/pkg/httpserver"
+	"examples/kahootee/config"
+	"examples/kahootee/internal/delivery/http"
+	"examples/kahootee/internal/repository"
+	"examples/kahootee/internal/service/jwthelper"
+	"examples/kahootee/internal/usecase"
+	"examples/kahootee/pkg/httpserver"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
-	"github.com/uchin-mentorship/ecommerce-go/customer"
-	"google.golang.org/grpc"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -27,6 +24,8 @@ import (
 
 func InitializeHttpServer() (*httpserver.Server, func(), error) {
 	engine := gin.New()
+	specification := provideConfig()
+	jwtHelper := provideJWTService(specification)
 	configConfig, err := config.NewConfig()
 	if err != nil {
 		return nil, nil, err
@@ -35,58 +34,51 @@ func InitializeHttpServer() (*httpserver.Server, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	customerRepo := provideCustomerRepo(db)
-	customer := provideCustomerUseCase(customerRepo)
-	router := http.NewRouter(engine, customer)
+	kahootRepo := provideKahootRepo(db)
+	kahootUsecase := provideKahootUseCase(kahootRepo)
+	groupRepo := provideGroupRepo(db)
+	groupUsecase := provideGroupUseCase(groupRepo)
+	router := http.NewRouter(engine, jwtHelper, kahootUsecase, groupUsecase)
 	server := provideHttpServer(router, engine, configConfig)
 	return server, func() {
 		cleanup()
 	}, nil
 }
 
-func InitializeGRPCServer() (*grpcserver.GRPCServer, func(), error) {
-	configConfig, err := config.NewConfig()
-	if err != nil {
-		return nil, nil, err
-	}
-	v := provideGRPCServerOptions()
-	server := grpc.NewServer(v...)
-	db, cleanup, err := provideGormDB(configConfig)
-	if err != nil {
-		return nil, nil, err
-	}
-	customerRepo := provideCustomerRepo(db)
-	customer := provideCustomerUseCase(customerRepo)
-	customerServiceServer := provideGRPCCustomerService(customer)
-	grpcServer := provideGRPCServer(configConfig, server, customerServiceServer)
-	return grpcServer, func() {
-		cleanup()
-	}, nil
-}
-
 // wire.go:
 
-var useCaseSet = wire.NewSet(config.NewConfig, provideGormDB, provideCustomerUseCase, provideCustomerRepo)
+var useCaseSet = wire.NewSet(config.NewConfig, provideGormDB, provideKahootUseCase, provideKahootRepo, provideGroupUseCase, provideGroupRepo, provideAuthUseCase, provideAuthRepo, provideJWTService, provideConfig)
 
-func provideGRPCCustomerService(u usecase.Customer) customer.CustomerServiceServer {
-	return grpc2.NewCustomerService(u)
+func provideKahootRepo(db *gorm.DB) usecase.KahootRepo {
+	return repo.NewKahootRepo(db)
 }
 
-func provideGRPCServerOptions() []grpc.ServerOption {
-	return nil
+func provideKahootUseCase(k usecase.KahootRepo) usecase.KahootUsecase {
+	return usecase.NewKahootUsecase(k)
 }
 
-func provideGRPCServer(cfg *config.Config, server *grpc.Server, delivery customer.CustomerServiceServer) *grpcserver.GRPCServer {
-	customer.RegisterCustomerServiceServer(server, delivery)
-	return grpcserver.New(server, cfg.GRPC.Address)
+func provideGroupRepo(db *gorm.DB) usecase.GroupRepo {
+	return repo.NewGroupRepo(db)
 }
 
-func provideCustomerRepo(db *gorm.DB) usecase.CustomerRepo {
-	return repository.New(db)
+func provideGroupUseCase(g usecase.GroupRepo) usecase.GroupUsecase {
+	return usecase.NewGroupUsecase(g)
 }
 
-func provideCustomerUseCase(r usecase.CustomerRepo) usecase.Customer {
-	return usecase.NewCustomer(r)
+func provideAuthRepo(db *gorm.DB) usecase.AuthRepo {
+	return repo.NewAuthRepo(db)
+}
+
+func provideAuthUseCase(g usecase.AuthRepo, jwtService service.JWTHelper) usecase.AuthUsecase {
+	return usecase.NewAuthUsecase(g, jwtService)
+}
+
+func provideJWTService(s *config.Specification) service.JWTHelper {
+	return service.NewJWTService(s)
+}
+
+func provideConfig() *config.Specification {
+	return config.LoadEnvConfig()
 }
 
 func provideGormDB(cfg *config.Config) (*gorm.DB, func(), error) {

@@ -5,22 +5,20 @@ package di
 
 import (
 	"examples/kahootee/config"
-	grpcDelivery "examples/kahootee/internal/delivery/grpc"
 	"examples/kahootee/internal/delivery/http"
 	"examples/kahootee/internal/repository"
+	service "examples/kahootee/internal/service/jwthelper"
 	"examples/kahootee/internal/usecase"
-	"examples/kahootee/pkg/grpcserver"
 	"examples/kahootee/pkg/httpserver"
 	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
-	"google.golang.org/grpc"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-var useCaseSet = wire.NewSet(config.NewConfig, provideGormDB, provideCustomerUseCase, provideCustomerRepo)
+var useCaseSet = wire.NewSet(config.NewConfig, provideGormDB, provideKahootUseCase, provideKahootRepo, provideGroupUseCase, provideGroupRepo, provideAuthUseCase, provideAuthRepo, provideJWTService,provideConfig)
 
 func InitializeHttpServer() (*httpserver.Server, func(), error) {
 	panic(wire.Build(
@@ -54,13 +52,35 @@ func InitializeHttpServer() (*httpserver.Server, func(), error) {
 // 	return grpcserver.New(server, cfg.GRPC.Address)
 // }
 
-// func provideCustomerRepo(db *gorm.DB) usecase.CustomerRepo {
-// 	return repository.New(db)
-// }
+func provideKahootRepo(db *gorm.DB) usecase.KahootRepo {
+	return repo.NewKahootRepo(db)
+}
 
-// func provideCustomerUseCase(r usecase.CustomerRepo) usecase.Customer {
-// 	return usecase.NewCustomer(r)
-// }
+func provideKahootUseCase(k usecase.KahootRepo) usecase.KahootUsecase {
+	return usecase.NewKahootUsecase(k)
+}
+
+func provideGroupRepo(db *gorm.DB) usecase.GroupRepo {
+	return repo.NewGroupRepo(db)
+}
+
+func provideGroupUseCase(g usecase.GroupRepo) usecase.GroupUsecase {
+	return usecase.NewGroupUsecase(g)
+}
+
+func provideAuthRepo(db *gorm.DB) usecase.AuthRepo {
+	return repo.NewAuthRepo(db)
+}
+
+func provideAuthUseCase(g usecase.AuthRepo, jwtService service.JWTHelper) usecase.AuthUsecase {
+	return usecase.NewAuthUsecase(g, jwtService)
+}
+func provideJWTService(s *config.Specification) service.JWTHelper {
+	return service.NewJWTService(s)
+}
+func provideConfig() *config.Specification {
+	return config.LoadEnvConfig()
+}
 
 func provideGormDB(cfg *config.Config) (*gorm.DB, func(), error) {
 	db, err := gorm.Open(postgres.Open(cfg.PG.URL), &gorm.Config{})

@@ -2,16 +2,15 @@ package usecase
 
 import (
 	"examples/kahootee/internal/entity"
-	repo "examples/kahootee/internal/repository"
 	service "examples/kahootee/internal/service/jwthelper"
 )
 
 type authUsecase struct {
-	repo       repo.AuthRepo
+	repo       AuthRepo
 	jwtService service.JWTHelper
 }
 
-func NewAuthUsecase(repo repo.AuthRepo, jwtService service.JWTHelper) AuthUsecase {
+func NewAuthUsecase(repo AuthRepo, jwtService service.JWTHelper) AuthUsecase {
 	return &authUsecase{
 		repo:       repo,
 		jwtService: jwtService,
