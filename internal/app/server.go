@@ -40,19 +40,3 @@ func waitSignal(err <-chan error) {
 		logger.Error("app - Run - httpServer.Notify: %v", err)
 	}
 }
-
-// func RunGRPCServer() {
-// 	grpcServer, cleanup, err := di.InitializeGRPCServer()
-// 	if err != nil {
-// 		logger.Fatal("failed to initialize grpc server: %v", err)
-// 	}
-
-// 	defer cleanup()
-
-// 	grpcServer.Start()
-
-// 	logger.Info("GRPC server is running")
-
-// 	waitSignal(grpcServer.Notify())
-// 	grpcServer.Shutdown()
-// }

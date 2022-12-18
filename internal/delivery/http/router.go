@@ -9,6 +9,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
+	"examples/kahootee/internal/delivery/http/auth"
 	v1 "examples/kahootee/internal/delivery/http/v1"
 	service "examples/kahootee/internal/service/jwthelper"
 	"examples/kahootee/internal/usecase"
@@ -17,6 +18,7 @@ import (
 type Router struct {
 	handler *gin.Engine
 	j       service.JWTHelper
+	a       usecase.AuthUsecase
 	k       usecase.KahootUsecase
 	g       usecase.GroupUsecase
 }
@@ -38,12 +40,14 @@ func (r *Router) Register() {
 
 	// Routers
 	v1.NewRouter(r.handler.Group("/v1"), r.j, r.k, r.g)
+	auth.NewAuthRouter(r.handler.Group("/auth"), r.a)
 }
 
-func NewRouter(handler *gin.Engine, jwtHelper service.JWTHelper, k usecase.KahootUsecase, g usecase.GroupUsecase) *Router {
+func NewRouter(handler *gin.Engine, jwtHelper service.JWTHelper, a usecase.AuthUsecase, k usecase.KahootUsecase, g usecase.GroupUsecase) *Router {
 	return &Router{
 		handler: handler,
 		j:       jwtHelper,
+		a:       a,
 		k:       k,
 		g:       g,
 	}

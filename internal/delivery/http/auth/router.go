@@ -22,9 +22,24 @@ type router struct {
 	u usecase.AuthUsecase
 }
 
-func NewAuthRouter(u usecase.AuthUsecase) AuthRouter {
-	return &router{
+func NewAuthRouter(handler *gin.RouterGroup, u usecase.AuthUsecase) {
+	newAuthRouter(handler, u)
+}
+
+func newAuthRouter(handler *gin.RouterGroup, u usecase.AuthUsecase) {
+	r := &router{
 		u: u,
+	}
+	auth := handler.Group("/auth")
+	{
+		auth.POST("/login", r.login)
+		auth.POST("/register", r.register)
+		auth.POST("/emailVerification", r.emailVerification)
+	}
+	googleAuth := handler.Group("/google")
+	{
+		googleAuth.GET("/login", r.googleLogin)
+		googleAuth.GET("/callback", r.googleCallback)
 	}
 }
 

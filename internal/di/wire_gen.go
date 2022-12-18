@@ -34,11 +34,13 @@ func InitializeHttpServer() (*httpserver.Server, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
+	authRepo := provideAuthRepo(db)
+	authUsecase := provideAuthUseCase(authRepo, jwtHelper)
 	kahootRepo := provideKahootRepo(db)
 	kahootUsecase := provideKahootUseCase(kahootRepo)
 	groupRepo := provideGroupRepo(db)
 	groupUsecase := provideGroupUseCase(groupRepo)
-	router := http.NewRouter(engine, jwtHelper, kahootUsecase, groupUsecase)
+	router := http.NewRouter(engine, jwtHelper, authUsecase, kahootUsecase, groupUsecase)
 	server := provideHttpServer(router, engine, configConfig)
 	return server, func() {
 		cleanup()
