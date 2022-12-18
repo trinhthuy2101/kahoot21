@@ -30,27 +30,10 @@ func newAuthRouter(handler *gin.RouterGroup, u usecase.AuthUsecase) {
 	r := &router{
 		u: u,
 	}
-	auth := handler.Group("/auth")
-	{
-		auth.POST("/login", r.login)
-		auth.POST("/register", r.register)
-		auth.POST("/emailVerification", r.emailVerification)
-	}
+	handler.POST("/login", r.login)
+	handler.POST("/register", r.register)
+	handler.POST("/emailVerification", r.emailVerification)
 	googleAuth := handler.Group("/google")
-	{
-		googleAuth.GET("/login", r.googleLogin)
-		googleAuth.GET("/callback", r.googleCallback)
-	}
-}
-
-func (r *router) Register(g *gin.Engine) {
-	auth := g.Group("/auth")
-	{
-		auth.POST("/login", r.login)
-		auth.POST("/register", r.register)
-		auth.POST("/emailVerification", r.emailVerification)
-	}
-	googleAuth := g.Group("/google")
 	{
 		googleAuth.GET("/login", r.googleLogin)
 		googleAuth.GET("/callback", r.googleCallback)
@@ -181,6 +164,7 @@ func (r *router) emailVerification(c *gin.Context) {
 	var request RegisterWithVerification
 
 	err := c.ShouldBindJSON(&request)
+	fmt.Println(request)
 	if err != nil || !request.Validate() {
 		c.JSON(http.StatusBadRequest, map[string]string{
 			"error_message": "Request is invalid",
