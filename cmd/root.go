@@ -6,7 +6,7 @@ import (
 
 func Execute() {
 	var rootCmd = &cobra.Command{
-		Use:   "customer",
+		Use:   "kahootee",
 		Short: "This is a short description",
 	}
 
